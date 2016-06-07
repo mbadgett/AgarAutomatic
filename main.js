@@ -6,9 +6,13 @@ function distance(a, b) {
     return Math.sqrt(dx * dx + dy * dy);
 }
 
-function Food(game) {
+function Food(game, x, y) {
     this.radius = 5;
-    Entity.call(this, game, 10 + Math.random() * 1580, 10 + Math.random() * 880);
+    var nX = x;
+    var nY = y;
+    if (x === undefined) nX = 20 + Math.random() * 1580;
+    if (y === undefined) nY = 20 + Math.random() * 880;
+    Entity.call(this, game, nX, nY);
 }
 
 Food.prototype = new Entity();
@@ -26,23 +30,26 @@ Food.prototype.draw = function (ctx) {
 
 Food.prototype.detectCollision = function () {};
 
-function Cell(game, x, y, radius) {
+function Cell(game, x, y, radius, loaded) {
     if (radius != undefined) this.radius = radius;
     else this.radius = 10 + Math.random() * 20;
     this.speed = function () {return 200 / this.radius};
     this.vX = 0;
     this.vY = 0;
     this.color = "#ffffff";
-    this.angle = Math.random() * 360;
+    if (loaded === undefined) {
+        this.angle = Math.random() * 360;
+        var angleAdj = this.angle * Math.PI;
+        angleAdj /= 180;
+        this.vX = Math.cos(angleAdj);
+        this.vY = Math.sin(angleAdj);
+    }
     this.collapsing = false;
     this.collapseCycle = 0;
     this.inert = false;
     this.criticalMassCycles =  0;
-    var angleAdj = this.angle * Math.PI;
-    angleAdj /= 180;
     this.maxRadius = 0;
-    this.vX = Math.cos(angleAdj);
-    this.vY = Math.sin(angleAdj);
+    
     var nX = x;
     var nY = y;
     if (x === undefined) nX = 100 + Math.random() * 1400;
@@ -189,21 +196,45 @@ Cell.prototype.draw = function (ctx) {
 
 AM.queueDownload("./img/background.jpg");
 
-AM.downloadAll(function () {
+var socket = io.connect("http://76.28.150.193:8888");
+// socket.on("load", function (data) {
+//     console.log(data);
+// });
+
+window.onload = function () {
     console.log("starting up da sheild");
-    var canvas = document.getElementById("gameWorld");
-    var ctx = canvas.getContext("2d");
-
-    var gameEngine = new GameEngine();
-    gameEngine.init(ctx);
     
-    for (var i = 0; i < 10; i++) {
-        gameEngine.addEntity(new Cell(gameEngine, 100 + Math.random() * 1400, 100 + Math.random() * 700));
-    }
-    for  (i = 0; i < 250; i++) {
-        gameEngine.addEntity(new Food(gameEngine));
-    }
-    gameEngine.start();
+    AM.downloadAll(function () {
+        console.log("starting up da sheild");
+        var canvas = document.getElementById("gameWorld");
+        var ctx = canvas.getContext("2d");
 
-    console.log("All Done!");
-});
+        var gameEngine = new GameEngine();
+        gameEngine.init(ctx);
+
+        for (var i = 0; i < 10; i++) {
+            gameEngine.addEntity(new Cell(gameEngine, 100 + Math.random() * 1400, 100 + Math.random() * 700));
+        }
+        for  (i = 0; i < 250; i++) {
+            gameEngine.addEntity(new Food(gameEngine));
+        }
+        gameEngine.start();
+
+        socket.on("load", function (data) {
+            gameEngine.load(data.data);
+            console.log(data.data);
+        });
+        var save = document.getElementById("save");
+        var load = document.getElementById("load");
+
+        save.onclick = function () {
+            socket.emit("save", { studentname: "Michael Badgett", statename: "saveState", data: gameEngine.save()});
+            console.log("dataSaved");
+        };
+
+        load.onclick = function () {
+            socket.emit("load", { studentname: "Michael Badgett", statename: "saveState" });
+        };
+        console.log("All Done!");
+    });
+};

@@ -63,8 +63,8 @@ GameEngine.prototype.update = function () {
             this.removeEntity(entity);
             if (entity instanceof Food) {
                 var chance = Math.random();
-                if (this.entities.length < 180) chance = 1;
-                if (chance > .98) this.addEntity(new Food(this));
+                if (this.entities.length < 260) chance = 1;
+                if (chance > .95) this.addEntity(new Food(this));
             }
         }
     }
@@ -78,6 +78,44 @@ GameEngine.prototype.loop = function () {
     this.clockTick = this.timer.tick();
     this.update();
     this.draw();
+};
+
+GameEngine.prototype.save = function () {
+    var rtn = [];
+    for (var i = 0; i < this.entities.length; i++) {
+        var ent = this.entities[i];
+        if (ent instanceof Food) {
+            var entry = {type: "Food", x: ent.x, y: ent.y};
+            rtn.push(entry);
+        } else {
+            var entry = {type: "Cell", x: ent.x, y: ent.y, radius: ent.radius, vX: ent.vX, vY: ent.vY,
+                collapsing: ent.collapsing, collapseCycle: ent.collapseCycle, inert: ent.inert, criticalMassCycles: ent.criticalMassCycles,
+                maxRadius: ent.maxRadius };
+            console.log(entry);
+            rtn.push(entry);
+        }
+    }
+    return rtn;
+};
+
+GameEngine.prototype.load = function (entities) {
+    this.entities = [];
+    for (var i = 0; i < entities.length; i++) {
+        var ent = entities[i];
+        if (ent.type === "Food") {
+            this.addEntity(new Food(this, ent.x, ent.y));
+        } else {
+            var cell = new Cell(this, ent.x, ent.y, ent.radius, true);
+            cell.vX = ent.vX;
+            cell.vY = ent.vY;
+            cell.collapsing = ent.collapsing;
+            cell.collapseCycle = ent.collapseCycle;
+            cell.criticalMassCycles = ent.criticalMassCycles;
+            cell.inert = ent.inert;
+            cell.maxRadius = ent.maxRadius;
+            this.addEntity(cell);
+        }
+    }
 };
 
 function Timer() {
