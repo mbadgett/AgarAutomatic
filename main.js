@@ -196,7 +196,7 @@ Cell.prototype.draw = function (ctx) {
 
 AM.queueDownload("./img/background.jpg");
 
-var socket = io.connect("http://76.28.150.193:8888");
+//var socket = io.connect("http://76.28.150.193:8888");
 // socket.on("load", function (data) {
 //     console.log(data);
 // });
@@ -224,16 +224,16 @@ window.onload = function () {
             gameEngine.load(data.data);
             console.log(data.data);
         });
-        var save = document.getElementById("save");
-        var load = document.getElementById("load");
+        // var save = document.getElementById("save");
+        // var load = document.getElementById("load");
 
         save.onclick = function () {
-            socket.emit("save", { studentname: "Michael Badgett", statename: "saveState", data: gameEngine.save()});
+            //socket.emit("save", { studentname: "Michael Badgett", statename: "saveState", data: gameEngine.save()});
             console.log("dataSaved");
         };
 
         load.onclick = function () {
-            socket.emit("load", { studentname: "Michael Badgett", statename: "saveState" });
+            //socket.emit("load", { studentname: "Michael Badgett", statename: "saveState" });
         };
         console.log("All Done!");
     });
