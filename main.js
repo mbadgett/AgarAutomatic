@@ -220,10 +220,10 @@ window.onload = function () {
         }
         gameEngine.start();
 
-        socket.on("load", function (data) {
+        /*socket.on("load", function (data) {
             gameEngine.load(data.data);
             console.log(data.data);
-        });
+        });*/
         // var save = document.getElementById("save");
         // var load = document.getElementById("load");
 
